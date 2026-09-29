@@ -1,0 +1,574 @@
+-- MissDior Da Hood Script - Silent Aim + Camlock + FOV + Prediction
+-- Made by missdior
+-- Pixel bunny theme: light pink + light blue
+-- Works on Delta Executor for Da Hood
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
+
+local LP = Players.LocalPlayer
+local Cam = Workspace.CurrentCamera
+local Mouse = LP:GetMouse()
+
+-- ===== CONFIG =====
+local CFG = {
+    SilentAim = false,
+    Camlock = false,
+    FOV = 130,
+    Prediction = 0.165,
+    TeamCheck = false,
+    TargetPart = "Head",
+    CamlockKey = Enum.KeyCode.C,
+    CamlockKeybindEnabled = false,
+    AutoToggle = false
+}
+
+-- ===== PIXEL BUNNY PALETTE =====
+local P = {
+    BG_TOP    = Color3.fromRGB(190, 220, 250),
+    PANEL     = Color3.fromRGB(255, 255, 255),
+    TAB_ACTIVE= Color3.fromRGB(255, 255, 255),
+    TAB_IDLE  = Color3.fromRGB(230, 240, 255),
+    PINK      = Color3.fromRGB(255, 175, 205),
+    BLUE      = Color3.fromRGB(180, 215, 250),
+    TEXT      = Color3.fromRGB(130, 110, 140),
+    TEXT_DARK = Color3.fromRGB(90, 70, 100),
+    ON        = Color3.fromRGB(255, 175, 205),
+    OFF       = Color3.fromRGB(210, 220, 235),
+    WHITE     = Color3.fromRGB(255, 255, 255)
+}
+
+-- ===== GUI =====
+local Gui = Instance.new("ScreenGui")
+Gui.Name = "MissDiorDaHood"
+Gui.ResetOnSpawn = false
+Gui.IgnoreGuiInset = true
+Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Gui.Parent = LP:WaitForChild("PlayerGui")
+
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 420, 0, 290)
+Main.Position = UDim2.new(0.5, -210, 0.5, -145)
+Main.BackgroundColor3 = P.BG_TOP
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.Draggable = true
+Main.Parent = Gui
+
+local MC = Instance.new("UICorner")
+MC.CornerRadius = UDim.new(0, 14)
+MC.Parent = Main
+
+local MBorder = Instance.new("UIStroke")
+MBorder.Color = P.PINK
+MBorder.Thickness = 3
+MBorder.Parent = Main
+
+-- Banner
+local Banner = Instance.new("Frame")
+Banner.Size = UDim2.new(1, 0, 0, 80)
+Banner.Position = UDim2.new(0, 0, 0, 0)
+Banner.BackgroundColor3 = P.BG_TOP
+Banner.BorderSizePixel = 0
+Banner.Parent = Main
+
+local BC = Instance.new("UICorner")
+BC.CornerRadius = UDim.new(0, 14)
+BC.Parent = Banner
+
+local BannerMask = Instance.new("Frame")
+BannerMask.Size = UDim2.new(1, 0, 0, 14)
+BannerMask.Position = UDim2.new(0, 0, 1, -14)
+BannerMask.BackgroundColor3 = P.BG_TOP
+BannerMask.BorderSizePixel = 0
+BannerMask.Parent = Banner
+
+-- ===== PIXEL BUNNIES =====
+local LogoHolder = Instance.new("Frame")
+LogoHolder.Size = UDim2.new(1, 0, 0, 36)
+LogoHolder.Position = UDim2.new(0, 0, 0, 6)
+LogoHolder.BackgroundTransparency = 1
+LogoHolder.Parent = Banner
+
+local function px(parent, x, y, w, h, color)
+    local f = Instance.new("Frame")
+    f.Position = UDim2.new(0, x, 0, y)
+    f.Size = UDim2.new(0, w, 0, h)
+    f.BackgroundColor3 = color
+    f.BorderSizePixel = 0
+    f.Parent = parent
+    return f
+end
+
+-- Left brown bunny
+local LeftBunny = Instance.new("Frame")
+LeftBunny.Size = UDim2.new(0, 34, 0, 34)
+LeftBunny.Position = UDim2.new(0.5, -125, 0, 1)
+LeftBunny.BackgroundTransparency = 1
+LeftBunny.Parent = LogoHolder
+
+local BROWN = Color3.fromRGB(200, 160, 130)
+local BROWN_D = Color3.fromRGB(150, 110, 85)
+px(LeftBunny, 6, 0, 5, 10, BROWN)
+px(LeftBunny, 22, 0, 5, 10, BROWN)
+px(LeftBunny, 7, 2, 3, 7, P.PINK)
+px(LeftBunny, 23, 2, 3, 7, P.PINK)
+px(LeftBunny, 5, 9, 24, 18, BROWN)
+px(LeftBunny, 10, 16, 3, 3, P.TEXT_DARK)
+px(LeftBunny, 21, 16, 3, 3, P.TEXT_DARK)
+px(LeftBunny, 15, 21, 4, 3, BROWN_D)
+
+-- Center title
+local TitleText = Instance.new("TextLabel")
+TitleText.Size = UDim2.new(0, 190, 0, 34)
+TitleText.Position = UDim2.new(0.5, -95, 0, 1)
+TitleText.BackgroundTransparency = 1
+TitleText.Text = "MissDior"
+TitleText.TextColor3 = P.PINK
+TitleText.Font = Enum.Font.Fondamento
+TitleText.TextScaled = true
+TitleText.Parent = LogoHolder
+
+local TitleOutline = Instance.new("UIStroke")
+TitleOutline.Color = P.WHITE
+TitleOutline.Thickness = 2
+TitleOutline.Parent = TitleText
+
+-- Right white bunny
+local RightBunny = Instance.new("Frame")
+RightBunny.Size = UDim2.new(0, 34, 0, 34)
+RightBunny.Position = UDim2.new(0.5, 91, 0, 1)
+RightBunny.BackgroundTransparency = 1
+RightBunny.Parent = LogoHolder
+
+px(RightBunny, 6, 0, 5, 10, P.WHITE)
+px(RightBunny, 22, 0, 5, 10, P.WHITE)
+px(RightBunny, 7, 2, 3, 7, P.PINK)
+px(RightBunny, 23, 2, 3, 7, P.PINK)
+px(RightBunny, 5, 9, 24, 18, P.WHITE)
+px(RightBunny, 10, 16, 3, 3, P.TEXT_DARK)
+px(RightBunny, 21, 16, 3, 3, P.TEXT_DARK)
+px(RightBunny, 15, 21, 4, 3, P.PINK)
+
+-- Tabs
+local TabBar = Instance.new("Frame")
+TabBar.Size = UDim2.new(1, -30, 0, 30)
+TabBar.Position = UDim2.new(0, 15, 0, 46)
+TabBar.BackgroundTransparency = 1
+TabBar.Parent = Banner
+
+local Tabs = {}
+local TabNames = {"homepage", "camlock", "silent aim"}
+local TabButtons = {}
+
+local function selectTab(name)
+    for n, t in pairs(Tabs) do t.Visible = (n == name) end
+    for n, b in pairs(TabButtons) do
+        b.BackgroundColor3 = (n == name) and P.TAB_ACTIVE or P.TAB_IDLE
+        b.TextColor3 = (n == name) and P.PINK or P.TEXT
+    end
+end
+
+for i, name in ipairs(TabNames) do
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(0, 122, 0, 26)
+    b.Position = UDim2.new(0, (i-1) * 124, 0, 2)
+    b.BackgroundColor3 = P.TAB_IDLE
+    b.BorderSizePixel = 0
+    b.Text = "♡ " .. name
+    b.TextColor3 = P.TEXT
+    b.Font = Enum.Font.Fondamento
+    b.TextScaled = true
+    b.AutoButtonColor = false
+    b.Parent = TabBar
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(1, 0)
+    c.Parent = b
+    b.MouseButton1Click:Connect(function() selectTab(name) end)
+    TabButtons[name] = b
+end
+
+-- Content
+local Content = Instance.new("Frame")
+Content.Size = UDim2.new(1, -20, 1, -100)
+Content.Position = UDim2.new(0, 10, 0, 86)
+Content.BackgroundColor3 = P.PANEL
+Content.BorderSizePixel = 0
+Content.Parent = Main
+
+local ContentCorner = Instance.new("UICorner")
+ContentCorner.CornerRadius = UDim.new(0, 10)
+ContentCorner.Parent = Content
+
+local function makeTab(name)
+    local t = Instance.new("Frame")
+    t.Size = UDim2.new(1, 0, 1, 0)
+    t.BackgroundTransparency = 1
+    t.Visible = false
+    t.Parent = Content
+    Tabs[name] = t
+    return t
+end
+
+local homeTab = makeTab("homepage")
+local camTab = makeTab("camlock")
+local silentTab = makeTab("silent aim")
+
+-- Toggle builder
+local function toggleRow(parent, label, y, init, cb)
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, -20, 0, 28)
+    row.Position = UDim2.new(0, 10, 0, y)
+    row.BackgroundTransparency = 1
+    row.Parent = parent
+    
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0.6, 0, 1, 0)
+    lbl.Position = UDim2.new(0, 4, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = label
+    lbl.TextColor3 = P.TEXT_DARK
+    lbl.Font = Enum.Font.Fondamento
+    lbl.TextScaled = true
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = row
+    
+    local track = Instance.new("Frame")
+    track.Size = UDim2.new(0, 38, 0, 18)
+    track.Position = UDim2.new(1, -42, 0.5, -9)
+    track.BackgroundColor3 = init and P.ON or P.OFF
+    track.BorderSizePixel = 0
+    track.Parent = row
+    local tc = Instance.new("UICorner")
+    tc.CornerRadius = UDim.new(1, 0)
+    tc.Parent = track
+    
+    local knob = Instance.new("Frame")
+    knob.Size = UDim2.new(0, 12, 0, 12)
+    knob.Position = init and UDim2.new(1, -15, 0.5, -6) or UDim2.new(0, 3, 0.5, -6)
+    knob.BackgroundColor3 = P.WHITE
+    knob.BorderSizePixel = 0
+    knob.Parent = track
+    local kc = Instance.new("UICorner")
+    kc.CornerRadius = UDim.new(1, 0)
+    kc.Parent = knob
+    
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 1, 0)
+    btn.BackgroundTransparency = 1
+    btn.Text = ""
+    btn.Parent = row
+    
+    local state = init
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        track.BackgroundColor3 = state and P.ON or P.OFF
+        TweenService:Create(knob, TweenInfo.new(0.15), {
+            Position = state and UDim2.new(1, -15, 0.5, -6) or UDim2.new(0, 3, 0.5, -6)
+        }):Play()
+        if cb then cb(state) end
+    end)
+    return state
+end
+
+-- ===== HOMEPAGE =====
+local hp = Instance.new("TextLabel")
+hp.Size = UDim2.new(1, -40, 1, -20)
+hp.Position = UDim2.new(0, 20, 0, 10)
+hp.BackgroundTransparency = 1
+hp.Text = "missdior da hood script ♡\n\nsilent aim · camlock · fov\nprediction · team check\n\nworks with delta executor"
+hp.TextColor3 = P.TEXT
+hp.Font = Enum.Font.Fondamento
+hp.TextScaled = true
+hp.TextWrapped = true
+hp.Parent = homeTab
+
+-- ===== CAMLOCK TAB =====
+local camTitle = Instance.new("TextLabel")
+camTitle.Size = UDim2.new(1, 0, 0, 22)
+camTitle.Position = UDim2.new(0, 0, 0, 4)
+camTitle.BackgroundTransparency = 1
+camTitle.Text = "camlock"
+camTitle.TextColor3 = P.PINK
+camTitle.Font = Enum.Font.Fondamento
+camTitle.TextScaled = true
+camTitle.Parent = camTab
+
+toggleRow(camTab, "Camlock: OFF", 32, false, function(v) CFG.Camlock = v end)
+toggleRow(camTab, "Auto Toggle: OFF", 62, false, function(v) CFG.AutoToggle = v end)
+toggleRow(camTab, "Use KEYB: OFF", 92, false, function(v) CFG.CamlockKeybindEnabled = v end)
+
+local tkRow = Instance.new("Frame")
+tkRow.Size = UDim2.new(1, -20, 0, 26)
+tkRow.Position = UDim2.new(0, 10, 0, 124)
+tkRow.BackgroundTransparency = 1
+tkRow.Parent = camTab
+
+local tkLbl = Instance.new("TextLabel")
+tkLbl.Size = UDim2.new(0.35, 0, 1, 0)
+tkLbl.Position = UDim2.new(0, 4, 0, 0)
+tkLbl.BackgroundTransparency = 1
+tkLbl.Text = "Toggle Key"
+tkLbl.TextColor3 = P.TEXT_DARK
+tkLbl.Font = Enum.Font.Fondamento
+tkLbl.TextScaled = true
+tkLbl.TextXAlignment = Enum.TextXAlignment.Left
+tkLbl.Parent = tkRow
+
+local tkBox = Instance.new("TextButton")
+tkBox.Size = UDim2.new(0.6, 0, 1, 0)
+tkBox.Position = UDim2.new(0.4, 0, 0, 0)
+tkBox.BackgroundColor3 = P.TAB_IDLE
+tkBox.BorderSizePixel = 0
+tkBox.Text = "[C]"
+tkBox.TextColor3 = P.TEXT
+tkBox.Font = Enum.Font.Fondamento
+tkBox.TextScaled = true
+tkBox.AutoButtonColor = false
+tkBox.Parent = tkRow
+local tkc = Instance.new("UICorner")
+tkc.CornerRadius = UDim.new(0, 6)
+tkc.Parent = tkBox
+
+-- ===== SILENT AIM TAB =====
+local silTitle = Instance.new("TextLabel")
+silTitle.Size = UDim2.new(1, 0, 0, 22)
+silTitle.Position = UDim2.new(0, 0, 0, 4)
+silTitle.BackgroundTransparency = 1
+silTitle.Text = "silent aim"
+silTitle.TextColor3 = P.PINK
+silTitle.Font = Enum.Font.Fondamento
+silTitle.TextScaled = true
+silTitle.Parent = silentTab
+
+toggleRow(silentTab, "Silent Aim: OFF", 30, false, function(v) CFG.SilentAim = v end)
+toggleRow(silentTab, "Team Check: OFF", 60, false, function(v) CFG.TeamCheck = v end)
+
+-- FOV slider
+local fovLbl = Instance.new("TextLabel")
+fovLbl.Size = UDim2.new(0.6, 0, 0, 20)
+fovLbl.Position = UDim2.new(0, 14, 0, 92)
+fovLbl.BackgroundTransparency = 1
+fovLbl.Text = "FOV: " .. CFG.FOV
+fovLbl.TextColor3 = P.TEXT_DARK
+fovLbl.Font = Enum.Font.Fondamento
+fovLbl.TextScaled = true
+fovLbl.TextXAlignment = Enum.TextXAlignment.Left
+fovLbl.Parent = silentTab
+
+local fovSlider = Instance.new("TextButton")
+fovSlider.Size = UDim2.new(1, -20, 0, 12)
+fovSlider.Position = UDim2.new(0, 10, 0, 116)
+fovSlider.BackgroundColor3 = P.OFF
+fovSlider.BorderSizePixel = 0
+fovSlider.Text = ""
+fovSlider.AutoButtonColor = false
+fovSlider.Parent = silentTab
+local fsc = Instance.new("UICorner")
+fsc.CornerRadius = UDim.new(1, 0)
+fsc.Parent = fovSlider
+
+local fovFill = Instance.new("Frame")
+fovFill.Size = UDim2.new(0.3, 0, 1, 0)
+fovFill.BackgroundColor3 = P.PINK
+fovFill.BorderSizePixel = 0
+fovFill.Parent = fovSlider
+local ffc = Instance.new("UICorner")
+ffc.CornerRadius = UDim.new(1, 0)
+ffc.Parent = fovFill
+
+-- Prediction slider
+local predLbl = Instance.new("TextLabel")
+predLbl.Size = UDim2.new(0.6, 0, 0, 20)
+predLbl.Position = UDim2.new(0, 14, 0, 134)
+predLbl.BackgroundTransparency = 1
+predLbl.Text = "Prediction: " .. CFG.Prediction
+predLbl.TextColor3 = P.TEXT_DARK
+predLbl.Font = Enum.Font.Fondamento
+predLbl.TextScaled = true
+predLbl.TextXAlignment = Enum.TextXAlignment.Left
+predLbl.Parent = silentTab
+
+local predSlider = Instance.new("TextButton")
+predSlider.Size = UDim2.new(1, -20, 0, 12)
+predSlider.Position = UDim2.new(0, 10, 0, 158)
+predSlider.BackgroundColor3 = P.OFF
+predSlider.BorderSizePixel = 0
+predSlider.Text = ""
+predSlider.AutoButtonColor = false
+predSlider.Parent = silentTab
+local psc = Instance.new("UICorner")
+psc.CornerRadius = UDim.new(1, 0)
+psc.Parent = predSlider
+
+local predFill = Instance.new("Frame")
+predFill.Size = UDim2.new(0.5, 0, 1, 0)
+predFill.BackgroundColor3 = P.PINK
+predFill.BorderSizePixel = 0
+predFill.Parent = predSlider
+local pfc = Instance.new("UICorner")
+pfc.CornerRadius = UDim.new(1, 0)
+pfc.Parent = predFill
+
+-- Footer
+local Footer = Instance.new("TextLabel")
+Footer.Size = UDim2.new(1, 0, 0, 18)
+Footer.Position = UDim2.new(0, 0, 1, -22)
+Footer.BackgroundTransparency = 1
+Footer.Text = "made by missdior ♡"
+Footer.TextColor3 = P.PINK
+Footer.Font = Enum.Font.Fondamento
+Footer.TextScaled = true
+Footer.Parent = Main
+
+-- FOV circle
+local Circle = Instance.new("Frame")
+Circle.Size = UDim2.new(0, CFG.FOV, 0, CFG.FOV)
+Circle.Position = UDim2.new(0.5, -CFG.FOV/2, 0.5, -CFG.FOV/2)
+Circle.BackgroundTransparency = 1
+Circle.Parent = Gui
+local cc = Instance.new("UICorner")
+cc.CornerRadius = UDim.new(1, 0)
+cc.Parent = Circle
+local cs = Instance.new("UIStroke")
+cs.Color = P.PINK
+cs.Thickness = 2
+cs.Transparency = 0.25
+cs.Parent = Circle
+
+-- ===== LOGIC =====
+local function getChar(plr)
+    return plr and plr.Character
+end
+
+local function isKO(plr)
+    local char = getChar(plr)
+    if not char then return true end
+    local be = char:FindFirstChild("BodyEffects")
+    if be then
+        local ko = be:FindFirstChild("K.O")
+        if ko and ko.Value then return true end
+    end
+    if char:FindFirstChild("GRABBING_CONSTRAINT") then return true end
+    return false
+end
+
+local function partPos(plr)
+    local char = getChar(plr)
+    if not char then return nil end
+    local p = char:FindFirstChild(CFG.TargetPart)
+        or char:FindFirstChild("HumanoidRootPart")
+    return p and p.Position, p
+end
+
+local function validTarget(plr)
+    if plr == LP then return false end
+    local char = getChar(plr)
+    if not char then return false end
+    local h = char:FindFirstChildOfClass("Humanoid")
+    if not h or h.Health <= 0 then return false end
+    if CFG.TeamCheck and plr.Team == LP.Team then return false end
+    if isKO(plr) then return false end
+    return true
+end
+
+local function closest()
+    local best, bestD = nil, math.huge
+    local center = Vector2.new(Cam.ViewportSize.X/2, Cam.ViewportSize.Y/2)
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if validTarget(plr) then
+            local pos, part = partPos(plr)
+            if pos then
+                local sp, on = Cam:WorldToViewportPoint(pos)
+                if on then
+                    local d = (Vector2.new(sp.X, sp.Y) - center).Magnitude
+                    if d <= CFG.FOV/2 and d < bestD then
+                        bestD = d
+                        best = plr
+                    end
+                end
+            end
+        end
+    end
+    return best
+end
+
+-- Silent Aim hook
+local __index
+__index = hookmetamethod(game, "__index", function(t, k)
+    if t:IsA("Mouse") and (k == "Hit" or k == "Target") and CFG.SilentAim then
+        local target = closest()
+        if target then
+            local pos, part = partPos(target)
+            if part then
+                local hit = part.CFrame + (part.Velocity * CFG.Prediction)
+                return (k == "Hit" and hit or part)
+            end
+        end
+    end
+    return __index(t, k)
+end)
+
+-- Camlock + Aimlock loop
+RunService:BindToRenderStep("MissDiorCamlock", 0, function()
+    local active = CFG.Camlock
+    if CFG.CamlockKeybindEnabled then
+        active = active and UserInputService:IsKeyDown(CFG.CamlockKey)
+    end
+    if active then
+        local target = closest()
+        if target then
+            local pos, part = partPos(target)
+            if part then
+                local hit = part.CFrame + (part.Velocity * CFG.Prediction)
+                Cam.CFrame = CFrame.lookAt(Cam.CFrame.Position, hit.Position)
+            end
+        end
+    end
+end)
+
+-- Slider drags
+local draggingF, draggingP = false, false
+fovSlider.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then draggingF = true end
+end)
+predSlider.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then draggingP = true end
+end)
+UserInputService.InputEnded:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+        draggingF, draggingP = false, false
+    end
+end)
+UserInputService.InputChanged:Connect(function(i)
+    if i.UserInputType ~= Enum.UserInputType.MouseMovement and i.UserInputType ~= Enum.UserInputType.Touch then return end
+    local mp = UserInputService:GetMouseLocation()
+    if draggingF then
+        local rel = math.clamp((mp.X - fovSlider.AbsolutePosition.X)/fovSlider.AbsoluteSize.X, 0, 1)
+        CFG.FOV = math.floor(40 + rel*(400-40))
+        fovFill.Size = UDim2.new(rel, 0, 1, 0)
+        fovLbl.Text = "FOV: " .. CFG.FOV
+        Circle.Size = UDim2.new(0, CFG.FOV, 0, CFG.FOV)
+        Circle.Position = UDim2.new(0.5, -CFG.FOV/2, 0.5, -CFG.FOV/2)
+    end
+    if draggingP then
+        local rel = math.clamp((mp.X - predSlider.AbsolutePosition.X)/predSlider.AbsoluteSize.X, 0, 1)
+        CFG.Prediction = math.floor(rel * 100) / 100
+        predFill.Size = UDim2.new(rel, 0, 1, 0)
+        predLbl.Text = "Prediction: " .. CFG.Prediction
+    end
+end)
+
+-- Keybind
+UserInputService.InputBegan:Connect(function(i, gp)
+    if gp then return end
+    if i.KeyCode == CFG.CamlockKey and CFG.CamlockKeybindEnabled then
+        CFG.Camlock = not CFG.Camlock
+    end
+end)
+
+-- Default tab
+selectTab("homepage")
